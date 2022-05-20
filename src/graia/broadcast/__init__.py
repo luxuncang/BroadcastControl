@@ -224,29 +224,22 @@ class Broadcast:
         return self.namespaces[-1]
 
     def removeNamespace(self, name):
-        if self.containNamespace(name):
-            for index, i in enumerate(self.namespaces):
-                if i.name == name:
-                    self.namespaces.pop(index)
-                    return
-        else:
+        if not self.containNamespace(name):
             raise UnexistedNamespace(name)
+        for index, i in enumerate(self.namespaces):
+            if i.name == name:
+                self.namespaces.pop(index)
+                return
 
     def containNamespace(self, name):
-        for i in self.namespaces:
-            if i.name == name:
-                return True
-        return False
+        return any(i.name == name for i in self.namespaces)
 
     def getNamespace(self, name) -> "Namespace":
         if self.containNamespace(name):
             for i in self.namespaces:
                 if i.name == name:
                     return i
-            else:
-                raise UnexistedNamespace(name)
-        else:
-            raise UnexistedNamespace(name)
+        raise UnexistedNamespace(name)
 
     def hideNamespace(self, name):
         ns = self.getNamespace(name)
@@ -265,10 +258,7 @@ class Broadcast:
         ns.disabled = False
 
     def containListener(self, target):
-        for i in self.listeners:
-            if i.callable == target:
-                return True
-        return False
+        return any(i.callable == target for i in self.listeners)
 
     def getListener(self, target):
         for i in self.listeners:
@@ -294,8 +284,12 @@ class Broadcast:
         priority = int(priority)
 
         def receiver_wrapper(callable_target):
-            may_listener = self.getListener(callable_target)
-            if not may_listener:
+            if may_listener := self.getListener(callable_target):
+                if event in may_listener.listening_events:
+                    raise RegisteredEventListener(event.__name__, "has been registered!")  # type: ignore
+                else:
+                    may_listener.listening_events.append(event)  # type: ignore
+            else:
                 self.listeners.append(
                     Listener(
                         callable=callable_target,
@@ -306,11 +300,6 @@ class Broadcast:
                         decorators=decorators,
                     )
                 )
-            else:
-                if event not in may_listener.listening_events:
-                    may_listener.listening_events.append(event)  # type: ignore
-                else:
-                    raise RegisteredEventListener(event.__name__, "has been registered!")  # type: ignore
             return callable_target
 
         return receiver_wrapper
