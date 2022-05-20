@@ -43,9 +43,5 @@ class DecoratorInterface(BaseDispatcher):
     async def catch(self, interface: "DispatcherInterface"):
         if isinstance(interface.default, Decorator):
             decorator: Decorator = interface.default
-            with ctx_dei_returnvalue.use(
-                await interface.lookup_param(interface.name, interface.annotation, None, [[], 0])
-                if not decorator.pre
-                else None
-            ):
+            with ctx_dei_returnvalue.use(None if decorator.pre else await interface.lookup_param(interface.name, interface.annotation, None, [[], 0])):
                 return Force(await run_always_await_safely(decorator.target, self))

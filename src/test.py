@@ -53,19 +53,16 @@ async def r(r: str, d: str, c: str):
     pass
 
 
-count = 10000
-
 event = TestEvent()
 listener = broadcast.getListener(r)
-tasks = []
 import cProfile
 
 mixins = dispatcher_mixin_handler(event.Dispatcher)
-for _ in range(count):
-    # broadcast.postEvent(event)
-    # tasks.append(
-    #    loop.create_task(broadcast.Executor(listener, event)))
-    tasks.append(broadcast.Executor(ExecTarget(r), dispatchers=mixins.copy()))
+count = 10000
+tasks = [
+    broadcast.Executor(ExecTarget(r), dispatchers=mixins.copy())
+    for _ in range(count)
+]
 
 s = time.time()
 # print(s)

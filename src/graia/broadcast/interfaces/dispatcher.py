@@ -104,13 +104,12 @@ class DispatcherInterface(Generic[T_Event]):
 
                 optimized_log.append(dispatcher)
                 return result
-            else:
-                raise RequirementCrashed(
-                    "the dispatching requirement crashed: ",
-                    self.name,
-                    self.annotation,
-                    self.default,
-                )
+            raise RequirementCrashed(
+                "the dispatching requirement crashed: ",
+                self.name,
+                self.annotation,
+                self.default,
+            )
         finally:
             self.parameter_contexts.pop()
 

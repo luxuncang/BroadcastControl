@@ -22,8 +22,7 @@ class Depend(Decorator):
 
     async def target(self, interface: DecoratorInterface):
         if self.cache:
-            attempt = interface.local_storage.get(self.depend_callable)
-            if attempt:
+            if attempt := interface.local_storage.get(self.depend_callable):
                 return Force(attempt)
         result = await interface.dispatcher_interface.broadcast.Executor(
             target=self.depend_callable,
